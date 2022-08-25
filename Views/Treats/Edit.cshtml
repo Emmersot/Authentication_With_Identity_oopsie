@@ -1,0 +1,33 @@
+@{
+  Layout = "_Layout";
+}
+
+@model PierreSweets.Models.Treat
+
+<div class="jumbotron text-center">
+  <h2>Edit</h2>
+</div>
+
+<h4>Edit this treat: @Html.DisplayFor(model => model.Ingredients)</h4>
+
+@using (Html.BeginForm())
+{
+  @Html.HiddenFor(model => model.TreatId)
+
+  @Html.LabelFor(model => model.Name)
+  @Html.EditorFor(model => model.Name)
+
+  @Html.LabelFor(model => model.Ingredients)
+  @Html.EditorFor(model => model.Ingredients)
+
+  @Html.LabelFor(model => model.Rating)
+  @Html.TextBoxFor(model => model.Rating, new { type="range" , min = 1, max = 10, step = 1})
+
+
+  @Html.Label("Select flavor")
+  @Html.DropDownList("FlavorId")
+
+  <input type="submit" value="Save" />
+}
+
+<p>@Html.ActionLink("Back to list", "Index")</p>

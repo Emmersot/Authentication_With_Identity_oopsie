@@ -2,8 +2,11 @@
   Layout = "_Layout";
 }
 
+@using PierreSweets.Models;
+@model IEnumerable<PierreSweets.Models.Treat>;
+
 <div class="jumbotron text-center">
-  <h2>Welcome to Pierre's Sweet & Savory Treats</h2>
+  <h2>Treats List</h2>
 </div>
 <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
@@ -14,7 +17,7 @@
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#!" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Flavors
+            Flavor
           </a>
           <ul class="dropdown-menu">
             <li>@Html.ActionLink("All Flavors", "Index", "Flavors", null, new { @class="dropdown-item" })</li>
@@ -23,7 +26,7 @@
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#!" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Treats
+            Treat
           </a>
           <ul class="dropdown-menu">
             <li>@Html.ActionLink("All Treats", "Index", "Treats", null, new { @class="dropdown-item" })</li>
@@ -31,14 +34,35 @@
           </ul>
         </li>
       </ul>
+      <div>
+        @using (Html.BeginForm("Index", "Treats", FormMethod.Get))
+        {
+          <div class="d-flex" role="search">
+            @Html.TextBox("SearchString", null, new { type="search", placeholder = "Search", @class="form-control me-2"})
+            <button class="btn btn-outline-success" type="submit">Search</button>
+          </div>
+        }
+      </div>
     </div>
   </div>
 </nav>
 <hr />
-<div class="text-center">
-  <button class="btn btn-outline-primary">@Html.ActionLink("Create an account", "Index", "Account")</button>
+
+<div class="jumbotron text-center">
+    <h2>Treats for @User.Identity.Name</h2>
 </div>
-<br />
-<div>
-  <img src='~/img/Candys.jpg' class="img-fluid" alt="a pic of candy" />
-</div>
+
+
+@if (Model.Any())
+{
+  <ul>
+    @foreach (Treat treat in Model)
+    {
+      <li>@Html.ActionLink($"{treat.Name}", "Details", new { id = treat.TreatId })</li>
+    }
+  </ul>
+} 
+else
+{
+  <h3>No treats have been added yet!</h3>
+}

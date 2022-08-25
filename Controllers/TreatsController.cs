@@ -3,135 +3,71 @@ using Microsoft.AspNetCore.Mvc;
 using PierreSweets.Models;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using System.Threading.Tasks;
-using System.Security.Claims;
+// using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace PierreSweets.Controllers
 {
-  [Authorize]
-  public class TreatsController : Controller
+  public class FlavorsController : Controller
   {
     private readonly PierreSweetsContext _db;
-    private readonly UserManager<ApplicationUser> _userManager;
-  
-    public TreatsController(UserManager<ApplicationUser> userManager, PierreSweetsContext db)
+
+    public FlavorsController(PierreSweetsContext db)
     {
-      _userManager = userManager;
       _db = db;
     }
 
-    public async Task<ActionResult> Index(string searchString)
+    public ActionResult Index()
     {
-      var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-      var currentUser = await _userManager.FindByIdAsync(userId);
-      if(!string.IsNullOrEmpty(searchString))
-      {
-        var model = _db.Treats
-          .Where(treat => treat.Ingredients.Contains(searchString))
-          .OrderByDescending(treat => treat.Rating)
-          .ToList();
-        return View(model);
-      }
-      else
-      {
-        var model = _db.Treats
-          .OrderByDescending(treat => treat.Rating)
-          .ToList();
-        return View(model);
-      }
+      List<Flavor> model = _db.Flavors.ToList();
+      return View(model);
     }
 
     public ActionResult Create()
     {
-      ViewBag.CategoryId = new SelectList(_db.Categories, "CategoryId", "Name");
       return View();
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(Treat treat, int CategoryId)
+    public ActionResult Create(Flavor flavor)
     {
-      var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-      var currentUser = await _userManager.FindByIdAsync(userId);
-      treat.User = currentUser;
-      _db.Treats.Add(treat);
+      _db.Flavors.Add(flavor);
       _db.SaveChanges();
-      if (CategoryId != 0)
-      {
-        _db.CategoryTreat.Add(new CategoryTreat() { CategoryId = CategoryId, TreatId = treat.TreatId });
-        _db.SaveChanges();
-      }
       return RedirectToAction("Index");
     }
 
     public ActionResult Details(int id)
     {
-      var thisTreat = _db.Treats
-          .Include(treat => treat.JoinEntities)
-          .ThenInclude(join => join.Category)
-          .FirstOrDefault(treat => treat.TreatId == id);
-      return View(thisTreat);
+      var thisFlavor = _db.Flavors
+          .Include(flavor => flavor.JoinEntities)
+          .ThenInclude(join => join.Treat)
+          .FirstOrDefault(flavor => flavor.FlavorId == id);
+      return View(thisFlavor);
     }
-
     public ActionResult Edit(int id)
     {
-      var thisTreat = _db.Treats.FirstOrDefault(treat => treat.TreatId == id);
-      ViewBag.CategoryId = new SelectList(_db.Categories, "CategoryId", "Name");
-      return View(thisTreat);
+      var thisFlavor = _db.Flavors.FirstOrDefault(flavor => flavor.FlavorId == id);
+      return View(thisFlavor);
     }
 
     [HttpPost]
-    public ActionResult Edit(Treat treat, int CategoryId)
+    public ActionResult Edit(Flavor flavor)
     {
-      if (CategoryId != 0)
-      {
-        _db.CategoryTreat.Add(new CategoryTreat() { CategoryId = CategoryId, TreatId = treat.TreatId });
-      }
-      _db.Entry(treat).State = EntityState.Modified;
-      _db.SaveChanges();
-      return RedirectToAction("Index");
-    }
-
-    public ActionResult AddCategory(int id)
-    {
-      var thisTreat = _db.Treats.FirstOrDefault(treat => treat.TreatId == id);
-      ViewBag.CategoryId = new SelectList(_db.Categories, "CategoryId", "Name");
-      return View(thisTreat);
-    }
-
-    [HttpPost]
-    public ActionResult AddCategory(Treat treat, int CategoryId)
-    {
-      if (CategoryId != 0)
-      {
-      _db.CategoryTreat.Add(new CategoryTreat() { CategoryId = CategoryId, TreatId = treat.TreatId });
-      }
+      _db.Entry(flavor).State = EntityState.Modified;
       _db.SaveChanges();
       return RedirectToAction("Index");
     }
 
     public ActionResult Delete(int id)
     {
-      var thisTreat = _db.Treats.FirstOrDefault(treat => treat.TreatId == id);
-      return View(thisTreat);
+      var thisFlavor = _db.Flavors.FirstOrDefault(flavor => flavor.FlavorId == id);
+      return View(thisFlavor);
     }
 
     [HttpPost, ActionName("Delete")]
     public ActionResult DeleteConfirmed(int id)
     {
-      var thisTreat = _db.Treats.FirstOrDefault(treat => treat.TreatId == id);
-      _db.Treats.Remove(thisTreat);
-      _db.SaveChanges();
-      return RedirectToAction("Index");
-    }
-
-    [HttpPost]
-    public ActionResult DeleteCategory(int joinId)
-    {
-      var joinEntry = _db.CategoryTreat.FirstOrDefault(entry => entry.CategoryTreatId == joinId);
-      _db.CategoryTreat.Remove(joinEntry);
+      var thisFlavor = _db.Flavors.FirstOrDefault(flavor => flavor.FlavorId == id);
+      _db.Flavors.Remove(thisFlavor);
       _db.SaveChanges();
       return RedirectToAction("Index");
     }
